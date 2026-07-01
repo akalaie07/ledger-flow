@@ -1,26 +1,186 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =============================================================================
+   Kalaie Ledger — "Modern Ledger" Design System
+   Warmes Papier (hell) + warmes Tinten-Schwarz (dunkel), Emerald-Akzent.
+   Geldwerte immer mit tabular-nums. Display: Fraunces, UI: Hanken Grotesk.
+   ============================================================================= */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  /* Warm paper light mode */
+  --background: #f7f4ee;
+  --surface: #fffdf9;
+  --surface-2: #f2eee5;
+  --border: #e6e0d4;
+  --border-strong: #d8d0c0;
+  --foreground: #1b1813;
+  --muted-foreground: #6c6555;
+  --faint: #948c79;
+
+  --primary: #1f6f57;
+  --primary-foreground: #fbfaf6;
+  --primary-soft: #e4efe7;
+  --primary-ring: #1f6f57;
+
+  --success: #1f6f57;
+  --success-soft: #e4efe7;
+  --danger: #ad3b28;
+  --danger-soft: #f6e4df;
+  --warning: #9a6a16;
+  --warning-soft: #f4ebd8;
+
+  --ring: #1f6f57;
+
+  --shadow-color: 38 30 18;
+  --shadow-card: 0 1px 2px rgb(var(--shadow-color) / 0.04),
+    0 4px 12px -2px rgb(var(--shadow-color) / 0.06);
+  --shadow-lift: 0 1px 2px rgb(var(--shadow-color) / 0.05),
+    0 12px 32px -6px rgb(var(--shadow-color) / 0.12);
+
+  --grain-opacity: 0.5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Warm ink dark mode — never pure gray, never inverted */
+    --background: #14120f;
+    --surface: #1b1916;
+    --surface-2: #211e1a;
+    --border: #2e2a24;
+    --border-strong: #3a352d;
+    --foreground: #f0ece2;
+    --muted-foreground: #a39b8a;
+    --faint: #756d5e;
+
+    --primary: #4ec59c;
+    --primary-foreground: #0e1512;
+    --primary-soft: #18302a;
+    --primary-ring: #4ec59c;
+
+    --success: #4ec59c;
+    --success-soft: #18302a;
+    --danger: #e08166;
+    --danger-soft: #341e19;
+    --warning: #d6a44a;
+    --warning-soft: #2e2517;
+
+    --ring: #4ec59c;
+
+    --shadow-color: 0 0 0;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -6px rgb(0 0 0 / 0.5);
+    --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 40px -8px rgb(0 0 0 / 0.6);
+
+    --grain-opacity: 0.35;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Subtle film grain over the whole app for warmth/depth */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Display headings */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+/* Faint ledger ruling, used behind auth/checkout for "accounting paper" feel */
+.ledger-rules {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    color-mix(in oklab, var(--foreground) 5%, transparent) 31px,
+    color-mix(in oklab, var(--foreground) 5%, transparent) 32px
+  );
+}
+
+.bg-grid {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklab, var(--foreground) 7%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+/* Entrance animation for staggered reveals */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--primary) 24%, transparent);
 }
