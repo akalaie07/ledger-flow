@@ -7,6 +7,7 @@ import { formatEur } from "@/lib/utils";
 import { Wordmark } from "@/components/brand";
 import { PublicFooter } from "@/components/public-footer";
 import { SellerLegalInfo } from "@/components/seller-legal-info";
+import { isSellReady } from "@/lib/legal/sell-readiness";
 import { CheckoutButton } from "./_components/checkout-button";
 
 export const metadata: Metadata = { title: "Checkout — Kalaie Ledger" };
@@ -25,7 +26,7 @@ export default async function BuyPage({
   const { data: product } = await admin
     .from("products")
     .select(
-      "id, name, description, price_amount, payment_type, down_payment, installment_count, installment_interval_days, active, organizations(name, stripe_account_id, legal_name, address_street, address_zip, address_city, address_country, contact_email, vat_id)",
+      "id, name, description, price_amount, payment_type, down_payment, installment_count, installment_interval_days, active, organizations(name, stripe_account_id, legal_name, address_street, address_zip, address_city, address_country, contact_email, vat_id, avv_accepted_at)",
     )
     .eq("id", productId)
     .maybeSingle();
@@ -33,7 +34,7 @@ export default async function BuyPage({
   if (!product) notFound();
 
   const org = Array.isArray(product.organizations) ? product.organizations[0] : product.organizations;
-  const available = product.active && !!org?.stripe_account_id;
+  const available = product.active && !!org && isSellReady(org);
 
   const isInstallment = product.payment_type === "installments";
   const downPayment = Number(product.down_payment ?? 0);

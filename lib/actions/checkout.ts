@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { isSellReady, SELL_READINESS_COLUMNS } from "@/lib/legal/sell-readiness";
 
 // Öffentliche Action: ein Kunde (nicht eingeloggt) startet den Kauf eines
 // Produkts. Liest Produkt + verbundenes Stripe-Konto über den Service-Role-
@@ -19,13 +20,17 @@ export async function startCheckout(productId: string): Promise<void> {
 
   const { data: product } = await admin
     .from("products")
-    .select("id, organization_id, name, price_amount, payment_type, down_payment, active, organizations(stripe_account_id, name)")
+    .select(
+      `id, organization_id, name, price_amount, payment_type, down_payment, active, organizations(name, ${SELL_READINESS_COLUMNS})`,
+    )
     .eq("id", productId)
     .maybeSingle();
 
   const org = Array.isArray(product?.organizations) ? product?.organizations[0] : product?.organizations;
 
-  if (!product || !product.active || !org?.stripe_account_id) {
+  // Verkauf nur, wenn Stripe verbunden UND Pflichtangaben + AVV vollständig
+  // sind. Serverseitige Sperre, damit sie nicht über die UI umgangen wird.
+  if (!product || !product.active || !org || !isSellReady(org)) {
     redirect(`/buy/${productId}?error=unavailable`);
   }
 

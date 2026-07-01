@@ -7,6 +7,7 @@ import { formatEur } from "@/lib/utils";
 import { Wordmark } from "@/components/brand";
 import { PublicFooter } from "@/components/public-footer";
 import { SellerLegalInfo } from "@/components/seller-legal-info";
+import { isSellReady } from "@/lib/legal/sell-readiness";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -22,7 +23,7 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
   const { data: org } = await admin
     .from("organizations")
     .select(
-      "id, name, stripe_account_id, legal_name, address_street, address_zip, address_city, address_country, contact_email, vat_id",
+      "id, name, stripe_account_id, legal_name, address_street, address_zip, address_city, address_country, contact_email, vat_id, avv_accepted_at",
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -36,7 +37,7 @@ export default async function StorefrontPage({ params }: { params: Promise<{ slu
     .eq("active", true)
     .order("created_at", { ascending: false });
 
-  const canSell = !!org.stripe_account_id;
+  const canSell = isSellReady(org);
 
   return (
     <div className="ledger-rules relative min-h-dvh">

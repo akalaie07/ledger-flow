@@ -33,6 +33,27 @@ export function SignupForm() {
         <Input id="password" name="password" type="password" autoComplete="new-password" required placeholder="••••••••" />
       </Field>
 
+      <div className="space-y-1.5">
+        <label htmlFor="accept_terms" className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+          <input
+            id="accept_terms"
+            name="accept_terms"
+            type="checkbox"
+            required
+            className="mt-0.5 size-4 shrink-0 rounded border-border-strong accent-primary"
+          />
+          <span>
+            Ich bestätige, dass ich als Unternehmer (§ 14 BGB) handle, und akzeptiere die{" "}
+            <a href="/agb" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">AGB</a>{" "}
+            und die{" "}
+            <a href="/datenschutz" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-foreground">Datenschutzerklärung</a>.
+          </span>
+        </label>
+        {state?.fieldErrors?.accept_terms?.[0] && (
+          <p className="text-sm text-danger">{state.fieldErrors.accept_terms[0]}</p>
+        )}
+      </div>
+
       <Button type="submit" size="lg" className="w-full" disabled={pending}>
         {pending ? "Konto wird erstellt…" : "Organisation erstellen"}
       </Button>

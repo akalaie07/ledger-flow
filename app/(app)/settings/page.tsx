@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, Badge, Dot } from "@/components/ui/card";
 import { buttonClass } from "@/components/ui/button";
 import { CopyLink } from "../products/_components/copy-link";
+import { isSellReady } from "@/lib/legal/sell-readiness";
 import { LegalInfoForm } from "./_components/legal-info-form";
 import { AvvAcceptButton } from "./_components/avv-accept-button";
 
@@ -35,6 +36,7 @@ export default async function SettingsPage({
 
   const isConnected = !!org?.stripe_account_id;
   const hasLegalInfo = !!(org?.legal_name && org?.address_street && org?.address_zip && org?.address_city && org?.contact_email);
+  const sellReady = !!org && isSellReady(org);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -42,6 +44,13 @@ export default async function SettingsPage({
         <h1 className="font-display text-3xl tracking-tight text-foreground">Einstellungen</h1>
         <p className="text-sm text-muted-foreground">Verwalte die Anbindung deiner Organisation.</p>
       </header>
+
+      {!sellReady && (
+        <div className="rounded-lg border border-warning/30 bg-warning-soft px-3.5 py-2.5 text-sm text-warning">
+          <strong>Verkauf noch nicht aktiv.</strong> Solange Stripe nicht verbunden ist oder die Pflichtangaben bzw.
+          der AVV fehlen, sind auf deiner Storefront keine Kaufbuttons sichtbar. Vervollständige die Punkte unten.
+        </div>
+      )}
 
       {stripe_connected && (
         <div className="rounded-lg border border-success/25 bg-success-soft px-3.5 py-2.5 text-sm text-success">

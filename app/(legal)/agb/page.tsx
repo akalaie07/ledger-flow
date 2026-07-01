@@ -7,7 +7,9 @@ const sections: { title: string; body: string[] }[] = [
     title: "1. Geltungsbereich",
     body: [
       "Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung der Software-Plattform Kalaie Ledger durch Organisationen, die sich registrieren, um eigene Produkte an ihre Kundinnen und Kunden zu verkaufen (nachfolgend „Organisation“).",
+      "Die Plattform richtet sich ausschließlich an Unternehmer im Sinne von § 14 BGB. Mit der Registrierung bestätigt die Organisation, dass sie in Ausübung ihrer gewerblichen oder selbständigen beruflichen Tätigkeit handelt. Ein Angebot an Verbraucher als Plattformnutzer erfolgt nicht.",
       "Anbieterin der Plattform ist Amir Kalaie, Palisadenstraße 35D, 10243 Berlin (siehe Impressum). Diese AGB gelten nicht im Verhältnis zwischen einer Organisation und deren eigenen Endkundinnen/-kunden — dieses Verhältnis regelt die Organisation selbst.",
+      "Organisationen mit Sitz in Österreich oder der Schweiz nutzen die Plattform ebenfalls als Unternehmer und sind selbst dafür verantwortlich, die für sie geltenden nationalen Vorschriften (z. B. österreichisches ECG/KSchG bzw. schweizerisches OR/UWG) gegenüber ihren Endkunden einzuhalten.",
     ],
   },
   {

@@ -25,6 +25,9 @@ const SignupSchema = z.object({
     .min(8, "Mindestens 8 Zeichen.")
     .regex(/[a-zA-Z]/, "Muss einen Buchstaben enthalten.")
     .regex(/[0-9]/, "Muss eine Zahl enthalten."),
+  accept_terms: z.literal("on", {
+    message: "Bitte bestätige, dass du als Unternehmer handelst und die AGB akzeptierst.",
+  }),
 });
 
 export async function signIn(_prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
@@ -74,6 +77,7 @@ export async function signUp(_prevState: AuthFormState, formData: FormData): Pro
     organization_name: formData.get("organization_name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    accept_terms: formData.get("accept_terms"),
   });
 
   if (!result.success) {
@@ -102,7 +106,7 @@ export async function signUp(_prevState: AuthFormState, formData: FormData): Pro
   const slug = await uniqueSlug(admin, slugify(organization_name));
   const { data: org, error: orgError } = await admin
     .from("organizations")
-    .insert({ name: organization_name, slug })
+    .insert({ name: organization_name, slug, acts_as_business: true, terms_accepted_at: new Date().toISOString() })
     .select("id")
     .single();
   if (orgError || !org) {
