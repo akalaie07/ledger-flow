@@ -207,6 +207,10 @@ export default async function SettingsPage({
             <dd className="text-foreground">{session.email}</dd>
           </div>
         </dl>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+          <p className="text-sm text-muted-foreground">Exportiere alle Deals deiner Organisation als CSV-Datei.</p>
+          <a href="/api/export" className={buttonClass("secondary")}>Daten exportieren</a>
+        </div>
       </Card>
     </div>
   );

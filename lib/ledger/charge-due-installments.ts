@@ -7,6 +7,12 @@ import { getStripe } from "@/lib/stripe";
 
 type Admin = SupabaseClient<Database>;
 
+// Nach so vielen fehlgeschlagenen Versuchen wird eine Rate nicht weiter
+// automatisch abgebucht (z. B. abgelaufene Karte) — sonst würde der Job sie
+// täglich für immer erneut belasten, was Stripe abstraft. Danach ist manuelle
+// Klärung durch die Organisation nötig.
+const MAX_FAILED_ATTEMPTS = 3;
+
 export type ChargeResult = {
   due: number;
   charged: number;
@@ -36,7 +42,7 @@ export async function chargeDueInstallments(admin: Admin, today = new Date().toI
 
   const { data: due, error } = await admin
     .from("installments")
-    .select("id, amount, deal_id, failed_attempts, deals(organizations(stripe_account_id))")
+    .select("id, amount, deal_id, failed_attempts, deals(refunded, cancelled, customers(email), organizations(stripe_account_id))")
     .eq("paid", false)
     .lte("due_date", today)
     .order("due_date");
@@ -74,7 +80,23 @@ export async function chargeDueInstallments(admin: Admin, today = new Date().toI
   for (const inst of due ?? []) {
     const deal = Array.isArray(inst.deals) ? inst.deals[0] : inst.deals;
     const org = Array.isArray(deal?.organizations) ? deal?.organizations[0] : deal?.organizations;
+    const customer = Array.isArray(deal?.customers) ? deal?.customers[0] : deal?.customers;
     const stripeAccount = org?.stripe_account_id ?? undefined;
+
+    // Stornierte oder erstattete Deals nicht weiter abbuchen — sonst würde nach
+    // einem Widerruf/Refund trotzdem die nächste Rate eingezogen.
+    if (deal?.refunded || deal?.cancelled) {
+      result.skipped++;
+      result.details.push({ installmentId: inst.id, status: "skipped", reason: "Deal storniert/erstattet" });
+      continue;
+    }
+
+    // Nach zu vielen Fehlversuchen automatisches Abbuchen stoppen.
+    if ((inst.failed_attempts ?? 0) >= MAX_FAILED_ATTEMPTS) {
+      result.skipped++;
+      result.details.push({ installmentId: inst.id, status: "skipped", reason: "Nach mehreren Fehlversuchen gestoppt" });
+      continue;
+    }
 
     if (!stripeAccount) {
       result.skipped++;
@@ -98,6 +120,9 @@ export async function chargeDueInstallments(admin: Admin, today = new Date().toI
           payment_method: card.paymentMethod,
           off_session: true,
           confirm: true,
+          // Beleg-Mail an den Kunden, damit die Abbuchung nicht unangekündigt
+          // erfolgt (Transparenz, weniger Rückbuchungen).
+          receipt_email: customer?.email ?? undefined,
           metadata: { installment_id: inst.id, deal_id: inst.deal_id },
         },
         { stripeAccount, idempotencyKey: `installment_${inst.id}` },

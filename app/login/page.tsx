@@ -62,6 +62,12 @@ export default function LoginPage() {
               Organisation erstellen
             </Link>
           </p>
+
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-faint">
+            <Link href="/impressum" className="hover:text-muted-foreground hover:underline">Impressum</Link>
+            <Link href="/datenschutz" className="hover:text-muted-foreground hover:underline">Datenschutz</Link>
+            <Link href="/agb" className="hover:text-muted-foreground hover:underline">AGB</Link>
+          </nav>
         </div>
       </main>
     </div>

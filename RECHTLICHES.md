@@ -42,6 +42,12 @@ Endkunden auf das Stripe-Konto der Organisation.
 - [x] **Verkaufssperre**: Kaufbuttons erscheinen erst, wenn Stripe verbunden **und** Pflichtangaben **und** AVV vollständig sind (`lib/legal/sell-readiness.ts`)
 - [x] Sperre greift **serverseitig** im Checkout (`startCheckout`), nicht nur in der UI — nicht umgehbar
 - [x] Warnhinweis in den Einstellungen, solange Verkauf nicht aktiv
+- [x] **Widerrufs-Zustimmung im Checkout**: Kunde bestätigt ausdrücklich den sofortigen Leistungsbeginn und das Erlöschen des Widerrufsrechts (§ 356 Abs. 4/5 BGB); Nachweis in den Stripe-Session-Metadaten
+- [x] **Keine Abbuchung nach Storno/Erstattung**: Raten-Job überspringt Deals mit `refunded`/`cancelled`; `charge.refunded`-Webhook markiert den Deal automatisch
+- [x] **Beleg-Mail bei jeder Raten-Abbuchung** (`receipt_email`) — keine unangekündigten Abbuchungen
+- [x] **Stopp nach 3 Fehlversuchen** statt endloser täglicher Wiederholung
+- [x] **CSV-Datenexport** in den Einstellungen (`/api/export`) — erfüllt die in AGB/AVV zugesagte Exportmöglichkeit
+- [x] **Rechtslinks auf Login/Signup** — Impressum von jeder Seite erreichbar
 
 ---
 
@@ -51,8 +57,8 @@ Priorität: 🔴 hoch · 🟡 mittel · 🟢 niedrig
 
 - 🔴 **ANWALT: Endabnahme aller fünf Dokumente** (Impressum, Datenschutz, AGB, AVV, Widerruf). Entwürfe sind praxisnah, aber nicht anwaltlich geprüft. Fixpreis-Pakete z. B. bei eRecht24 / IT-Recht Kanzlei.
 - 🔴 **ANWALT: Haftungsklausel AGB § 7** — Haftungsbeschränkungen sind AGB-rechtlich (§§ 305 ff. BGB) besonders fehleranfällig; unwirksame Klauseln können die ganze Klausel kippen.
+- 🔴 **STRIPE-EINSTELLUNG: `charge.refunded` als Webhook-Event aktivieren.** Der Refund-Handler ist im Code, aber der Connect-Webhook-Endpunkt in Stripe ist aktuell nur auf `checkout.session.completed` abonniert. Ohne `charge.refunded` (Scope „Connected accounts") wird der Deal bei einer Erstattung nicht automatisch gestoppt.
 - 🟡 **Muster-Widerrufsformular** ausformulieren (aktuell nur beschrieben). Die Organisation als Verkäufer muss es ihren Kunden bereitstellen — ggf. pro Organisation generieren.
-- 🟡 **Erlöschen des Widerrufsrechts bei digitalen/Dienstleistungs-Produkten**: Im Checkout fehlt die ausdrückliche Zustimmung + Kenntnisbestätigung des Kunden (§ 356 Abs. 4/5 BGB), damit das Widerrufsrecht wirksam erlischt. Sonst kann der Kunde trotz Konsum widerrufen. → Checkbox im Checkout nötig, wenn Coaching/Online-Kurse sofort starten.
 - 🟡 **Preisangaben (PAngV)**: Ob „inkl./zzgl. USt" korrekt ausgewiesen wird, hängt vom USt-Status der jeweiligen Organisation ab (nicht deiner). Aktuell nur genereller Hinweis. Bei regelbesteuerten Organisationen ggf. präzisieren.
 - 🟢 **Auftragsverarbeitung mit Subprozessoren**: AVV mit Supabase, Vercel und Stripe abschließen/dokumentieren (jeweils über deren Standard-DPAs verfügbar). Prüfen, dass Supabase-Projekt in EU-Region läuft (aktuell konfiguriertes Projekt: EU/`eu-central-1` empfohlen).
 - 🟢 **Drittlandtransfer**: Vercel (US) und Stripe (US-Bezug) über Standardvertragsklauseln absichern — in der Datenschutzerklärung bereits erwähnt, Nachweise ablegen.

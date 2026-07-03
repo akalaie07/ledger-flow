@@ -109,7 +109,25 @@ export default async function BuyPage({
 
               {available ? (
                 <div className="space-y-3">
-                  <form action={startCheckout.bind(null, product.id)}>
+                  {error === "consent" && (
+                    <p role="alert" className="rounded-lg border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
+                      Bitte bestätige den sofortigen Leistungsbeginn, um fortzufahren.
+                    </p>
+                  )}
+                  <form action={startCheckout.bind(null, product.id)} className="space-y-3">
+                    <label htmlFor="withdrawal_consent" className="flex items-start gap-2.5 text-left text-xs leading-relaxed text-muted-foreground">
+                      <input
+                        id="withdrawal_consent"
+                        name="withdrawal_consent"
+                        type="checkbox"
+                        required
+                        className="mt-0.5 size-4 shrink-0 rounded border-border-strong accent-primary"
+                      />
+                      <span>
+                        Ich verlange ausdrücklich, dass mit der Leistung sofort begonnen wird, und mir ist bekannt, dass
+                        mein Widerrufsrecht mit vollständiger Vertragserfüllung erlischt.
+                      </span>
+                    </label>
                     <CheckoutButton label={isInstallment ? "Zahlungspflichtig bestellen" : "Zahlungspflichtig kaufen"} />
                   </form>
                   <p className="text-center text-xs leading-relaxed text-faint">

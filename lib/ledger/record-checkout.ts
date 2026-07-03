@@ -21,6 +21,30 @@ function addDays(base: Date, days: number): string {
  * - installments → ein Deal + bezahlte Anzahlung (sequence 1) + N offene
  *                  Raten (sequence 2..N+1) mit Fälligkeiten im gewählten Abstand
  */
+/**
+ * Markiert den zugehörigen Deal als erstattet, wenn eine Zahlung (Anzahlung
+ * oder Rate) auf dem verbundenen Konto zurückerstattet wird. Der Deal wird
+ * anhand der PaymentIntent-ID der Rate gefunden. Sobald `refunded` gesetzt ist,
+ * überspringt der Raten-Job alle weiteren offenen Raten dieses Deals.
+ *
+ * Bewusst konservativ: jede Erstattung stoppt künftige Abbuchungen (Schutz vor
+ * Abbuchung trotz Widerruf). Läuft eine Ratenzahlung danach doch weiter, kann
+ * die Organisation den Deal manuell wieder aktivieren.
+ */
+export async function recordRefund(admin: Admin, charge: Stripe.Charge): Promise<void> {
+  const paymentIntentId = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  if (!paymentIntentId) return;
+
+  const { data: installment } = await admin
+    .from("installments")
+    .select("deal_id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+  if (!installment) return;
+
+  await admin.from("deals").update({ refunded: true }).eq("id", installment.deal_id);
+}
+
 export async function recordCheckout(admin: Admin, session: Stripe.Checkout.Session): Promise<void> {
   if (session.payment_status !== "paid") return;
 

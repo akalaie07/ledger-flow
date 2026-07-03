@@ -15,8 +15,16 @@ import { isSellReady, SELL_READINESS_COLUMNS } from "@/lib/legal/sell-readiness"
 // - installments  → nur die Anzahlung jetzt; Karte wird für die späteren
 //                   Raten gespeichert (setup_future_usage), Abbuchung der
 //                   Raten erfolgt später per Job (Phase 4).
-export async function startCheckout(productId: string): Promise<void> {
+export async function startCheckout(productId: string, formData: FormData): Promise<void> {
   const admin = createAdminClient();
+
+  // Verbraucher muss dem sofortigen Leistungsbeginn ausdrücklich zustimmen und
+  // bestätigen, dass das Widerrufsrecht mit vollständiger Erfüllung erlischt
+  // (§ 356 Abs. 4/5 BGB). Ohne diese Bestätigung kein Checkout.
+  const withdrawalConsent = formData.get("withdrawal_consent") === "on";
+  if (!withdrawalConsent) {
+    redirect(`/buy/${productId}?error=consent`);
+  }
 
   const { data: product } = await admin
     .from("products")
@@ -59,6 +67,9 @@ export async function startCheckout(productId: string): Promise<void> {
         product_id: product.id,
         organization_id: product.organization_id,
         payment_type: product.payment_type,
+        // Nachweis der Widerrufs-Zustimmung, dauerhaft am Zahlungsvorgang.
+        withdrawal_consent: "true",
+        withdrawal_consent_at: new Date().toISOString(),
       },
       success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/buy/${product.id}?error=cancelled`,

@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { recordCheckout } from "@/lib/ledger/record-checkout";
+import { recordCheckout, recordRefund } from "@/lib/ledger/record-checkout";
 import type { Json } from "@/lib/types/database";
 
 // Stripe braucht den ROHEN Body für die Signaturprüfung — in App-Router-Route-
@@ -62,6 +62,9 @@ export async function POST(request: NextRequest) {
   try {
     if (event.type === "checkout.session.completed") {
       await recordCheckout(admin, event.data.object as Stripe.Checkout.Session);
+    } else if (event.type === "charge.refunded") {
+      // Erstattung → Deal stoppen, damit keine weiteren Raten abgebucht werden.
+      await recordRefund(admin, event.data.object as Stripe.Charge);
     }
 
     await admin
